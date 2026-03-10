@@ -3,50 +3,42 @@ package LibraryDomain;
 import java.time.LocalDate;
 
 public class Member {
-    private int memberId;
-    private String firstName;
-    private String lastName;
-    private int personalNumber;
-    private MemberType memberType;
+    private final int memberId;
+    private final String firstName;
+    private final String lastName;
+    private final String personalNumber;
+    private final MemberType memberType;
 
-    private boolean AccountStatus = true;
-    private int borrowedCount = 0;
-    private int lateReturnsCount = 0;
-    private int suspensionsCount = 0;
+    private boolean active;
+    private int borrowedCount;
+    private int lateReturnsCount;
+    private int suspensionsCount;
     private LocalDate suspendedUntil;
 
-    public Member(int memberId, String firstName, String lastName, int personalNumber, MemberType memberType) {
+    public Member(int memberId, String firstName, String lastName,
+                  String personalNumber, MemberType memberType) {
         this.memberId = memberId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.personalNumber = personalNumber;
         this.memberType = memberType;
+        this.active = true;
+        this.borrowedCount = 0;
+        this.lateReturnsCount = 0;
+        this.suspensionsCount = 0;
+        this.suspendedUntil = null;
     }
 
     public int getMaxLoans() {
-        return switch (memberType) {
-            case UNDERGRADUATE -> 3;
-            case MASTER -> 5;
-            case PHD -> 7;
-            case TEACHER -> 10;
-        };
+        return memberType.getMaxLoans();
     }
 
     public boolean isSuspended(LocalDate today) {
-        if (suspendedUntil == null) {
-            return false;
-        }
-        return today.isBefore(suspendedUntil);
+        return suspendedUntil != null && today.isBefore(suspendedUntil);
     }
 
-    //public boolean isSuspended() {
-    //    return LocalDate.now().isBefore(suspendedUntil);
-    //}
-
     public boolean canBorrow(LocalDate today) {
-        return AccountStatus &&
-                !isSuspended(today) &&
-                borrowedCount < getMaxLoans();
+        return active && !isSuspended(today) && borrowedCount < getMaxLoans();
     }
 
     public void incrementBorrowedCount() {
@@ -72,16 +64,24 @@ public class Member {
         suspendedUntil = until;
 
         if (suspensionsCount > 2) {
-            AccountStatus = false;
+            active = false;
         }
+    }
+
+    public int getMemberId() {
+        return memberId;
+    }
+
+    public String getPersonalNumber() {
+        return personalNumber;
+    }
+
+    public MemberType getMemberType() {
+        return memberType;
     }
 
     public int getBorrowedCount() {
         return borrowedCount;
-    }
-
-    public boolean isActive() {
-        return AccountStatus;
     }
 
     public int getLateReturnsCount() {
@@ -91,5 +91,12 @@ public class Member {
     public int getSuspensionsCount() {
         return suspensionsCount;
     }
-}
 
+    public boolean isActive() {
+        return active;
+    }
+
+    public LocalDate getSuspendedUntil() {
+        return suspendedUntil;
+    }
+}
