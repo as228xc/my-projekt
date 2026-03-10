@@ -3,6 +3,7 @@ package LibraryService;
 import LibraryDomain.BookTitle;
 import LibraryDomain.Member;
 import LibraryRepository.BookRepository;
+import LibraryRepository.LoanRepository;
 import LibraryRepository.MemberRepository;
 import LibraryRepository.BookCopyRepository;
 import java.time.LocalDate;
@@ -16,11 +17,13 @@ public class LibrarySystem {
     private final MemberRepository memberRepository;
     private final BookRepository bookRepository;
     private final BookCopyRepository bookCopyRepository;
+    private final LoanRepository loanRepository;
 
-    public LibrarySystem(MemberRepository memberRepository, BookRepository bookRepository, BookCopyRepository bookCopyRepository) {
+    public LibrarySystem(MemberRepository memberRepository, BookRepository bookRepository, BookCopyRepository bookCopyRepository,LoanRepository loanRepository) {
         this.memberRepository = memberRepository;
         this.bookRepository = bookRepository;
         this.bookCopyRepository = bookCopyRepository;
+        this.loanRepository
     }
 
     public void showAllMembers() {
@@ -204,20 +207,24 @@ public class LibrarySystem {
             return;
         }
 
-        if (!book.hasAvailableCopy()) {
-            System.out.println("No copies available.");
-            logger.warn("Lend book failed. No copies available for ISBN {}.", isbn);
+        Integer copyId = bookCopyRepository.findAvailableCopyIdByIsbn(isbn);
+
+        if (copyId == null) {
+            System.out.println("No available copies.");
+            logger.warn("Lend book failed. No available copies for ISBN {}.", isbn);
             return;
         }
 
-        book.borrowOne();
-        member.incrementBorrowedCount();
+        bookCopyRepository.markCopyAsBorrowed(copyId);
 
-        bookRepository.update(book);
+        member.incrementBorrowedCount();
         memberRepository.update(member);
 
+        Loan loan = new Loan(memberId, copyId, today, today.plusDays(14));
+        loanRepository.save(loan);
+
         System.out.println("Book lent successfully.");
-        logger.info("Book lent successfully. memberId={}, isbn={}", memberId, isbn);
+        logger.info("Book lent successfully. memberId={}, isbn={}, copyId={}", memberId, isbn, copyId);
     }
 
     public void returnBook(int memberId, int isbn, LocalDate today) {

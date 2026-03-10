@@ -16,7 +16,8 @@ public class LibraryUI {
         MemberRepository memberRepo = new PostgresMemberRepository();
         BookRepository bookRepo = new PostgresBookRepository();
         BookCopyRepository bookCopyRepo = new PostgresBookCopyRepository();
-        LibrarySystem library = new LibrarySystem(memberRepo, bookRepo, bookCopyRepo);
+        LoanRepository loanRepo = new PostgresLoanRepository();
+        LibrarySystem library = new LibrarySystem(memberRepo, bookRepo, bookCopyRepo, loanRepo);
 
         while (true) {
             System.out.println("\n LIBRARY SYSTEM ");
