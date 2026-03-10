@@ -18,7 +18,7 @@ public class PostgresBookRepository implements BookRepository {
 
     @Override
     public BookTitle findByIsbn(int isbn) {
-        String sql = "SELECT * FROM books WHERE isbn = ?";
+        String sql = "SELECT * FROM book_titles WHERE isbn = ?";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -30,9 +30,8 @@ public class PostgresBookRepository implements BookRepository {
                 int foundIsbn = rs.getInt("isbn");
                 String title = rs.getString("title");
                 String author = rs.getString("author");
-                int totalCopies = rs.getInt("total_copies");
 
-                return new BookTitle(foundIsbn, title, author, totalCopies);
+                return new BookTitle(foundIsbn, title, author, 0);
             }
 
         } catch (Exception e) {
@@ -44,7 +43,8 @@ public class PostgresBookRepository implements BookRepository {
 
     @Override
     public void save(BookTitle book) {
-        String sql = "INSERT INTO books(isbn, title, author, total_copies) VALUES (?, ?, ?, ?)";
+
+        String sql = "INSERT INTO book_titles(isbn, title, author) VALUES (?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -52,7 +52,6 @@ public class PostgresBookRepository implements BookRepository {
             stmt.setInt(1, book.getIsbn());
             stmt.setString(2, book.getTitle());
             stmt.setString(3, book.getAuthor());
-            stmt.setInt(4, book.getTotalCopies());
 
             stmt.executeUpdate();
 
@@ -65,7 +64,7 @@ public class PostgresBookRepository implements BookRepository {
     public List<BookTitle> findAll() {
         List<BookTitle> books = new ArrayList<>();
 
-        String sql = "SELECT * FROM books";
+        String sql = "SELECT * FROM book_titles";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql);
