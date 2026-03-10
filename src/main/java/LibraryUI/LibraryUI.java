@@ -4,7 +4,6 @@ import LibraryDomain.*;
 import LibraryService.LibrarySystem;
 import LibraryRepository.*;
 import PostgresRepository.*;
-
 import java.time.LocalDate;
 import java.util.Scanner;
 
@@ -29,7 +28,9 @@ public class LibraryUI {
             System.out.println("6. Search member");
             System.out.println("7. Show all members");
             System.out.println("8. Show all books");
-            System.out.println("9. Exit");
+            System.out.println("9. Remove member");
+            System.out.println("10. Ban member");
+            System.out.println("11. Exit");
             System.out.print("Choose option: ");
 
             int choice = scanner.nextInt();
@@ -44,7 +45,9 @@ public class LibraryUI {
                 case 6 -> searchMember(scanner, library);
                 case 7 -> library.showAllMembers();
                 case 8 -> library.showAllBooks();
-                case 9 -> {
+                case 9 -> removeMember(scanner, library);
+                case 10 -> banMember(scanner, library);
+                case 11-> {
                     System.out.println("Goodbye!");
                     return;
                 }
@@ -129,5 +132,23 @@ public class LibraryUI {
         scanner.nextLine();
 
         library.returnBook(memberId, isbn, LocalDate.now());
+    }
+
+    private static void removeMember(Scanner scanner, LibrarySystem library) {
+
+        System.out.print("Enter member ID: ");
+        int memberId = scanner.nextInt();
+        scanner.nextLine();
+
+        library.removeMember(memberId);
+    }
+
+    private static void banMember(Scanner scanner, LibrarySystem library) {
+
+        System.out.print("Enter member ID: ");
+        int memberId = scanner.nextInt();
+        scanner.nextLine();
+
+        library.banMember(memberId);
     }
 }

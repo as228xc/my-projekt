@@ -6,9 +6,12 @@ import LibraryRepository.BookRepository;
 import LibraryRepository.MemberRepository;
 import java.time.LocalDate;
 import java.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class LibrarySystem {
 
+    private static final Logger logger = LogManager.getLogger(LibrarySystem.class);
     private final MemberRepository memberRepository;
     private final BookRepository bookRepository;
 
@@ -22,8 +25,11 @@ public class LibrarySystem {
 
         if (members.isEmpty()) {
             System.out.println("No members found.");
+            logger.info("Show all members requested, but no members were found.");
             return;
         }
+
+        logger.info("Showing all members. Count={}", members.size());
 
         System.out.println("\n ALL MEMBERS");
         for (Member member : members) {
@@ -45,8 +51,11 @@ public class LibrarySystem {
 
         if (books.isEmpty()) {
             System.out.println("No books found.");
+            logger.info("Show all books requested, but no books were found.");
             return;
         }
+
+        logger.info("Showing all books. Count={}", books.size());
 
         System.out.println("\n ALL BOOKS");
         for (BookTitle book : books) {
@@ -60,21 +69,51 @@ public class LibrarySystem {
     }
 
     public void registerMember(Member member) {
-        Member existing = memberRepository.findById(member.getMemberId());
 
-        if (existing != null) {
-            System.out.println("Member already exists.");
+        if (member == null) {
+            System.out.println("Member cannot be null.");
+            logger.error("Attempted to register a null member.");
             return;
         }
+
         String personalNumber = member.getPersonalNumber();
+
+        if (personalNumber == null || personalNumber.isBlank()) {
+            System.out.println("Personal number is required.");
+            logger.warn("Registration failed: missing personal number for memberId={}", member.getMemberId());
+            return;
+        }
 
         if (!personalNumber.matches("\\d+")) {
             System.out.println("Personal number must contain only digits.");
+            logger.warn("Registration failed: invalid personal number '{}' for memberId={}", personalNumber, member.getMemberId());
             return;
         }
-        memberRepository.save(member);
 
+        Member existingByPersonalNumber = memberRepository.findByPersonalNumber(personalNumber);
+
+        if (existingByPersonalNumber != null) {
+            if (existingByPersonalNumber.isBlacklisted()) {
+                System.out.println("Registration is not allowed. This person is blocked due to violation of library regulations.");
+                logger.warn("Registration denied: blacklisted person tried to register again. personalNumber={}", personalNumber);
+            } else {
+                System.out.println("This person is already registered.");
+                logger.info("Registration skipped: person already registered. personalNumber={}", personalNumber);
+            }
+            return;
+        }
+
+        Member existingById = memberRepository.findById(member.getMemberId());
+
+        if (existingById != null) {
+            System.out.println("Member ID already exists.");
+            logger.warn("Registration failed: memberId {} already exists.", member.getMemberId());
+            return;
+        }
+
+        memberRepository.save(member);
         System.out.println("Member registered successfully.");
+        logger.info("Member registered successfully. memberId={}, personalNumber={}", member.getMemberId(), personalNumber);
     }
 
     public void searchMemberById(int memberId) {
@@ -82,8 +121,11 @@ public class LibrarySystem {
 
         if (member == null) {
             System.out.println("Member not found.");
+            logger.warn("Member search failed. memberId={} not found.", memberId);
             return;
         }
+
+        logger.info("Member found. memberId={}", memberId);
 
         System.out.println("\n MEMBER INFORMATION ");
         System.out.println("Member ID: " + member.getMemberId());
@@ -103,11 +145,13 @@ public class LibrarySystem {
 
         if (existing != null) {
             System.out.println("Book already exists.");
+            logger.warn("Add book failed. ISBN {} already exists.", book.getIsbn());
             return;
         }
 
         bookRepository.save(book);
         System.out.println("Book added successfully.");
+        logger.info("Book added successfully. ISBN={}, title={}", book.getIsbn(), book.getTitle());
     }
 
     public void searchBookByIsbn(int isbn) {
@@ -115,8 +159,11 @@ public class LibrarySystem {
 
         if (book == null) {
             System.out.println("Book not found.");
+            logger.warn("Book search failed. ISBN {} not found.", isbn);
             return;
         }
+
+        logger.info("Book found. ISBN={}, title={}", isbn, book.getTitle());
 
         System.out.println("Title: " + book.getTitle());
         System.out.println("Author: " + book.getAuthor());
@@ -127,6 +174,7 @@ public class LibrarySystem {
             System.out.println("This book can be borrowed.");
         } else {
             System.out.println("No copies available right now.");
+            logger.info("Book ISBN {} found, but no copies are currently available.", isbn);
         }
     }
 
@@ -136,21 +184,25 @@ public class LibrarySystem {
 
         if (member == null) {
             System.out.println("Member not found.");
+            logger.warn("Lend book failed. Member {} not found.", memberId);
             return;
         }
 
         if (book == null) {
             System.out.println("Book not found.");
+            logger.warn("Lend book failed. ISBN {} not found.", isbn);
             return;
         }
 
         if (!member.canBorrow(today)) {
             System.out.println("Member cannot borrow more books.");
+            logger.warn("Lend book denied. Member {} is not allowed to borrow more books.", memberId);
             return;
         }
 
         if (!book.hasAvailableCopy()) {
             System.out.println("No copies available.");
+            logger.warn("Lend book failed. No copies available for ISBN {}.", isbn);
             return;
         }
 
@@ -161,6 +213,7 @@ public class LibrarySystem {
         memberRepository.save(member);
 
         System.out.println("Book lent successfully.");
+        logger.info("Book lent successfully. memberId={}, isbn={}", memberId, isbn);
     }
 
     public void returnBook(int memberId, int isbn, LocalDate today) {
@@ -169,11 +222,13 @@ public class LibrarySystem {
 
         if (member == null) {
             System.out.println("Member not found.");
+            logger.warn("Return book failed. Member {} not found.", memberId);
             return;
         }
 
         if (book == null) {
             System.out.println("Book not found.");
+            logger.warn("Return book failed. ISBN {} not found.", isbn);
             return;
         }
 
@@ -184,5 +239,64 @@ public class LibrarySystem {
         memberRepository.save(member);
 
         System.out.println("Book returned successfully.");
+        logger.info("Book returned successfully. memberId={}, isbn={}", memberId, isbn);
+    }
+
+    public void removeMember(int memberId) {
+
+        Member member = memberRepository.findById(memberId);
+
+        if (member == null) {
+            System.out.println("Member not found.");
+            logger.warn("Attempted to deactivate non-existing memberId={}", memberId);
+            return;
+        }
+
+        memberRepository.deactivateMember(memberId);
+        System.out.println("Member account deactivated.");
+        logger.info("Member account deactivated. memberId={}", memberId);
+    }
+
+    public void banMember(int memberId) {
+
+        Member member = memberRepository.findById(memberId);
+
+        if (member == null) {
+            System.out.println("Member not found.");
+            logger.warn("Attempted to blacklist non-existing memberId={}", memberId);
+            return;
+        }
+
+        memberRepository.blacklistMember(memberId);
+        System.out.println("Member has been blacklisted and cannot register again.");
+        logger.warn("Member {} was blacklisted.", memberId);
+    }
+
+    public void handleLateReturn(int memberId) {
+
+        Member member = memberRepository.findById(memberId);
+
+        if (member == null) {
+            System.out.println("Member not found.");
+            logger.warn("Late return handling failed: member {} not found.", memberId);
+            return;
+        }
+
+        member.registerLateReturn(java.time.LocalDate.now());
+
+        logger.info("Late return registered for memberId={}. Late returns={}",
+                memberId, member.getLateReturnsCount());
+
+        if (member.getLateReturnsCount() > 2) {
+            logger.warn("Member {} has exceeded allowed late returns and will be suspended.", memberId);
+        }
+
+        if (member.getSuspensionsCount() > 2) {
+            memberRepository.blacklistMember(memberId);
+            System.out.println("Member has been blacklisted due to repeated suspensions.");
+            logger.error("Member {} was automatically blacklisted after more than two suspensions.", memberId);
+        } else {
+            memberRepository.update(member);
+        }
     }
 }

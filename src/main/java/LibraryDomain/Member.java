@@ -14,6 +14,7 @@ public class Member {
     private int lateReturnsCount;
     private int suspensionsCount;
     private LocalDate suspendedUntil;
+    private boolean blacklisted;
 
     public Member(int memberId, String firstName, String lastName,
                   String personalNumber, MemberType memberType) {
@@ -27,6 +28,7 @@ public class Member {
         this.lateReturnsCount = 0;
         this.suspensionsCount = 0;
         this.suspendedUntil = null;
+        this.blacklisted = false;
     }
 
     public int getMaxLoans() {
@@ -68,6 +70,10 @@ public class Member {
         }
     }
 
+    public boolean isBlacklisted() {
+        return blacklisted;
+    }
+
     public int getMemberId() {
         return memberId;
     }
@@ -106,6 +112,30 @@ public class Member {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public void setBlacklisted(boolean blacklisted) {
+        this.blacklisted = blacklisted;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public void setBorrowedCount(int borrowedCount) {
+        this.borrowedCount = borrowedCount;
+    }
+
+    public void setLateReturnsCount(int lateReturnsCount) {
+        this.lateReturnsCount = lateReturnsCount;
+    }
+
+    public void setSuspensionsCount(int suspensionsCount) {
+        this.suspensionsCount = suspensionsCount;
+    }
+
+    public void setSuspendedUntil(LocalDate suspendedUntil) {
+        this.suspendedUntil = suspendedUntil;
     }
 }
 
