@@ -10,5 +10,7 @@ public interface BookRepository {
 
     void save(BookTitle book);
 
+    void update(BookTitle book);
+
     List<BookTitle> findAll();
 }

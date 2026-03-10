@@ -18,7 +18,15 @@ public class PostgresBookRepository implements BookRepository {
 
     @Override
     public BookTitle findByIsbn(int isbn) {
-        String sql = "SELECT * FROM book_titles WHERE isbn = ?";
+        String sql = """
+                SELECT bt.isbn, bt.title, bt.author,
+                       COUNT(bc.copy_id) AS total_copies,
+                       COUNT(CASE WHEN bc.available = true THEN 1 END) AS available_copies
+                FROM book_titles bt
+                LEFT JOIN book_copies bc ON bt.isbn = bc.isbn
+                WHERE bt.isbn = ?
+                GROUP BY bt.isbn, bt.title, bt.author
+                """;
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -30,8 +38,12 @@ public class PostgresBookRepository implements BookRepository {
                 int foundIsbn = rs.getInt("isbn");
                 String title = rs.getString("title");
                 String author = rs.getString("author");
+                int totalCopies = rs.getInt("total_copies");
+                int availableCopies = rs.getInt("available_copies");
 
-                return new BookTitle(foundIsbn, title, author, 0);
+                BookTitle book = new BookTitle(foundIsbn, title, author, totalCopies);
+                book.setAvailableCopies(availableCopies);
+                return book;
             }
 
         } catch (Exception e) {
@@ -43,7 +55,6 @@ public class PostgresBookRepository implements BookRepository {
 
     @Override
     public void save(BookTitle book) {
-
         String sql = "INSERT INTO book_titles(isbn, title, author) VALUES (?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -64,7 +75,15 @@ public class PostgresBookRepository implements BookRepository {
     public List<BookTitle> findAll() {
         List<BookTitle> books = new ArrayList<>();
 
-        String sql = "SELECT * FROM book_titles";
+        String sql = """
+                SELECT bt.isbn, bt.title, bt.author,
+                       COUNT(bc.copy_id) AS total_copies,
+                       COUNT(CASE WHEN bc.available = true THEN 1 END) AS available_copies
+                FROM book_titles bt
+                LEFT JOIN book_copies bc ON bt.isbn = bc.isbn
+                GROUP BY bt.isbn, bt.title, bt.author
+                ORDER BY bt.title
+                """;
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -75,8 +94,10 @@ public class PostgresBookRepository implements BookRepository {
                 String title = rs.getString("title");
                 String author = rs.getString("author");
                 int totalCopies = rs.getInt("total_copies");
+                int availableCopies = rs.getInt("available_copies");
 
                 BookTitle book = new BookTitle(isbn, title, author, totalCopies);
+                book.setAvailableCopies(availableCopies);
                 books.add(book);
             }
 
@@ -85,5 +106,23 @@ public class PostgresBookRepository implements BookRepository {
         }
 
         return books;
+    }
+
+    @Override
+    public void update(BookTitle book) {
+        String sql = "UPDATE book_titles SET title = ?, author = ? WHERE isbn = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, book.getTitle());
+            stmt.setString(2, book.getAuthor());
+            stmt.setInt(3, book.getIsbn());
+
+            stmt.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

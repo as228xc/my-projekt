@@ -4,6 +4,7 @@ import LibraryDomain.BookTitle;
 import LibraryDomain.Member;
 import LibraryRepository.BookRepository;
 import LibraryRepository.MemberRepository;
+import LibraryRepository.BookCopyRepository;
 import java.time.LocalDate;
 import java.util.*;
 import org.apache.logging.log4j.LogManager;
@@ -14,10 +15,12 @@ public class LibrarySystem {
     private static final Logger logger = LogManager.getLogger(LibrarySystem.class);
     private final MemberRepository memberRepository;
     private final BookRepository bookRepository;
+    private final BookCopyRepository bookCopyRepository;
 
-    public LibrarySystem(MemberRepository memberRepository, BookRepository bookRepository) {
+    public LibrarySystem(MemberRepository memberRepository, BookRepository bookRepository, BookCopyRepository bookCopyRepository) {
         this.memberRepository = memberRepository;
         this.bookRepository = bookRepository;
+        this.bookCopyRepository = bookCopyRepository;
     }
 
     public void showAllMembers() {
@@ -144,12 +147,13 @@ public class LibrarySystem {
         BookTitle existing = bookRepository.findByIsbn(book.getIsbn());
 
         if (existing != null) {
-            System.out.println("Book already exists.");
+            System.out.println("A book with this ISBN already exists.");
             logger.warn("Add book failed. ISBN {} already exists.", book.getIsbn());
             return;
         }
 
         bookRepository.save(book);
+        bookCopyRepository.createCopies(book.getIsbn(), book.getTotalCopies());
         System.out.println("Book added successfully.");
         logger.info("Book added successfully. ISBN={}, title={}", book.getIsbn(), book.getTitle());
     }
@@ -209,8 +213,8 @@ public class LibrarySystem {
         book.borrowOne();
         member.incrementBorrowedCount();
 
-        bookRepository.save(book);
-        memberRepository.save(member);
+        bookRepository.update(book);
+        memberRepository.update(member);
 
         System.out.println("Book lent successfully.");
         logger.info("Book lent successfully. memberId={}, isbn={}", memberId, isbn);
@@ -235,8 +239,8 @@ public class LibrarySystem {
         book.returnOne();
         member.decrementBorrowedCount();
 
-        bookRepository.save(book);
-        memberRepository.save(member);
+        bookRepository.update(book);
+        memberRepository.update(member);
 
         System.out.println("Book returned successfully.");
         logger.info("Book returned successfully. memberId={}, isbn={}", memberId, isbn);

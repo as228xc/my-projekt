@@ -215,7 +215,13 @@ public class PostgresMemberRepository implements MemberRepository {
 
     @Override
     public void update(Member member) {
-        String sql = "UPDATE members SET first_name = ?, last_name = ?, personal_number = ?, member_type = ?, active = ?, borrowed_count = ?, late_returns_count = ?, suspensions_count = ?, suspended_until = ?, blacklisted = ? WHERE member_id = ?";
+        String sql = """
+            UPDATE members
+            SET first_name = ?, last_name = ?, personal_number = ?, member_type = ?,
+                active = ?, borrowed_count = ?, late_returns_count = ?,
+                suspensions_count = ?, suspended_until = ?, blacklisted = ?
+            WHERE member_id = ?
+            """;
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -232,7 +238,7 @@ public class PostgresMemberRepository implements MemberRepository {
             if (member.getSuspendedUntil() != null) {
                 stmt.setDate(9, java.sql.Date.valueOf(member.getSuspendedUntil()));
             } else {
-                stmt.setDate(9, null);
+                stmt.setNull(9, java.sql.Types.DATE);
             }
 
             stmt.setBoolean(10, member.isBlacklisted());

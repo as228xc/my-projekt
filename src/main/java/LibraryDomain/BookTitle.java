@@ -51,4 +51,8 @@ public class BookTitle {
     public int getAvailableCopies() {
         return availableCopies;
     }
+
+    public void setAvailableCopies(int availableCopies) {
+        this.availableCopies = availableCopies;
+    }
 }
