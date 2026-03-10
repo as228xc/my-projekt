@@ -99,4 +99,13 @@ public class Member {
     public LocalDate getSuspendedUntil() {
         return suspendedUntil;
     }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
 }
+

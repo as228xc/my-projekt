@@ -2,6 +2,8 @@ package LibraryRepository;
 
 import LibraryDomain.Member;
 
+import java.util.List;
+
 public interface MemberRepository {
 
     Member findById(int memberId);
@@ -9,5 +11,7 @@ public interface MemberRepository {
     void save(Member member);
 
     void delete(int memberId);
+
+    List<Member> findAll();
 
 }

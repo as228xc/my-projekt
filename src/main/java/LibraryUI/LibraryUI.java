@@ -20,62 +20,69 @@ public class LibraryUI {
         LibrarySystem library = new LibrarySystem(memberRepo, bookRepo);
 
         while (true) {
-
-            System.out.println("\n===== LIBRARY SYSTEM =====");
-            System.out.println("1. Register member");
+            System.out.println("\n LIBRARY SYSTEM ");
+            System.out.println("1. Add member");
             System.out.println("2. Add book");
-            System.out.println("3. Lend book");
-            System.out.println("4. Return book");
-            System.out.println("5. Exit");
+            System.out.println("3. Search book");
+            System.out.println("4. Lend book");
+            System.out.println("5. Return book");
+            System.out.println("6. Search member");
+            System.out.println("7. Show all members");
+            System.out.println("8. Show all books");
+            System.out.println("9. Exit");
+            System.out.print("Choose option: ");
 
             int choice = scanner.nextInt();
             scanner.nextLine();
 
             switch (choice) {
-
-                case 1 -> registerMember(scanner, library);
-
+                case 1 -> addMember(scanner, library);
                 case 2 -> addBook(scanner, library);
-
-                case 3 -> lendBook(scanner, library);
-
-                case 4 -> returnBook(scanner, library);
-
-                case 5 -> {
-                    System.out.println("Goodbye");
+                case 3 -> searchBook(scanner, library);
+                case 4 -> lendBook(scanner, library);
+                case 5 -> returnBook(scanner, library);
+                case 6 -> searchMember(scanner, library);
+                case 7 -> library.showAllMembers();
+                case 8 -> library.showAllBooks();
+                case 9 -> {
+                    System.out.println("Goodbye!");
                     return;
                 }
-
-                default -> System.out.println("Invalid option");
+                default -> System.out.println("Invalid option.");
             }
         }
     }
 
-    private static void registerMember(Scanner scanner, LibrarySystem library) {
+    private static void searchMember(Scanner scanner, LibrarySystem library) {
+        System.out.print("Enter member ID: ");
+        int memberId = scanner.nextInt();
+        scanner.nextLine();
 
+        library.searchMemberById(memberId);
+    }
+
+    private static void addMember(Scanner scanner, LibrarySystem library) {
         System.out.print("Member ID: ");
         int id = scanner.nextInt();
         scanner.nextLine();
 
-        System.out.print("First name: ");
-        String first = scanner.nextLine();
+        System.out.print("Firstname: ");
+        String firstName = scanner.nextLine();
 
-        System.out.print("Last name: ");
-        String last = scanner.nextLine();
+        System.out.print("Lastname: ");
+        String lastName = scanner.nextLine();
 
-        System.out.print("Personal number: ");
-        String pnr = scanner.nextLine();
+        System.out.print("Personalnumber: ");
+        String personalNumber = scanner.nextLine();
 
-        System.out.println("Type (UNDERGRADUATE / MASTER / PHD / TEACHER): ");
-        MemberType type = MemberType.valueOf(scanner.nextLine().toUpperCase());
+        System.out.print("Member type (UNDERGRADUATE, MASTER, PHD, TEACHER): ");
+        MemberType memberType = MemberType.valueOf(scanner.nextLine().toUpperCase());
 
-        Member member = new Member(id, first, last, pnr, type);
-
+        Member member = new Member(id, firstName, lastName, personalNumber, memberType);
         library.registerMember(member);
     }
 
     private static void addBook(Scanner scanner, LibrarySystem library) {
-
         System.out.print("ISBN: ");
         int isbn = scanner.nextInt();
         scanner.nextLine();
@@ -88,30 +95,38 @@ public class LibraryUI {
 
         System.out.print("Number of copies: ");
         int copies = scanner.nextInt();
+        scanner.nextLine();
 
         BookTitle book = new BookTitle(isbn, title, author, copies);
-
         library.addBook(book);
     }
 
-    private static void lendBook(Scanner scanner, LibrarySystem library) {
+    private static void searchBook(Scanner scanner, LibrarySystem library) {
+        System.out.print("Enter ISBN: ");
+        int isbn = scanner.nextInt();
+        scanner.nextLine();
 
+        library.searchBookByIsbn(isbn);
+    }
+
+    private static void lendBook(Scanner scanner, LibrarySystem library) {
         System.out.print("Member ID: ");
         int memberId = scanner.nextInt();
 
         System.out.print("ISBN: ");
         int isbn = scanner.nextInt();
+        scanner.nextLine();
 
         library.lendBook(memberId, isbn, LocalDate.now());
     }
 
     private static void returnBook(Scanner scanner, LibrarySystem library) {
-
         System.out.print("Member ID: ");
         int memberId = scanner.nextInt();
 
         System.out.print("ISBN: ");
         int isbn = scanner.nextInt();
+        scanner.nextLine();
 
         library.returnBook(memberId, isbn, LocalDate.now());
     }
