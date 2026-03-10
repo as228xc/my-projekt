@@ -2,6 +2,7 @@ package LibraryService;
 
 import LibraryDomain.BookTitle;
 import LibraryDomain.Member;
+import LibraryDomain.Loan;
 import LibraryRepository.BookRepository;
 import LibraryRepository.LoanRepository;
 import LibraryRepository.MemberRepository;
@@ -23,7 +24,7 @@ public class LibrarySystem {
         this.memberRepository = memberRepository;
         this.bookRepository = bookRepository;
         this.bookCopyRepository = bookCopyRepository;
-        this.loanRepository
+        this.loanRepository = loanRepository;
     }
 
     public void showAllMembers() {
@@ -48,7 +49,7 @@ public class LibrarySystem {
             System.out.println("Late returns: " + member.getLateReturnsCount());
             System.out.println("Suspensions: " + member.getSuspensionsCount());
             System.out.println("Suspended until: " + member.getSuspendedUntil());
-            System.out.println("-------------------------");
+            System.out.println(" ");
         }
     }
 
