@@ -7,5 +7,4 @@ public interface BookCopyRepository {
     void markCopyAsReturned(int copyId);
     int countAvailableCopies(int isbn);
     int countTotalCopies(int isbn);
-    }
-
+}

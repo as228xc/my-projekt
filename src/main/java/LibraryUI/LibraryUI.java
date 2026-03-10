@@ -1,26 +1,35 @@
 package LibraryUI;
 
-import LibraryDomain.*;
+import LibraryDomain.BookTitle;
+import LibraryDomain.Member;
+import LibraryDomain.MemberType;
+import LibraryRepository.BookCopyRepository;
+import LibraryRepository.BookRepository;
+import LibraryRepository.LoanRepository;
+import LibraryRepository.MemberRepository;
 import LibraryService.LibrarySystem;
-import LibraryRepository.*;
-import PostgresRepository.*;
+import PostgresRepository.PostgresBookCopyRepository;
+import PostgresRepository.PostgresBookRepository;
+import PostgresRepository.PostgresLoanRepository;
+import PostgresRepository.PostgresMemberRepository;
+
 import java.time.LocalDate;
 import java.util.Scanner;
 
 public class LibraryUI {
 
     public static void main(String[] args) {
-
         Scanner scanner = new Scanner(System.in);
 
         MemberRepository memberRepo = new PostgresMemberRepository();
         BookRepository bookRepo = new PostgresBookRepository();
         BookCopyRepository bookCopyRepo = new PostgresBookCopyRepository();
         LoanRepository loanRepo = new PostgresLoanRepository();
+
         LibrarySystem library = new LibrarySystem(memberRepo, bookRepo, bookCopyRepo, loanRepo);
 
         while (true) {
-            System.out.println("\n LIBRARY SYSTEM ");
+            System.out.println("\nLIBRARY SYSTEM");
             System.out.println("1. Add member");
             System.out.println("2. Add book");
             System.out.println("3. Search book");
@@ -48,7 +57,7 @@ public class LibraryUI {
                 case 8 -> library.showAllBooks();
                 case 9 -> removeMember(scanner, library);
                 case 10 -> banMember(scanner, library);
-                case 11-> {
+                case 11 -> {
                     System.out.println("Goodbye!");
                     return;
                 }
@@ -136,7 +145,6 @@ public class LibraryUI {
     }
 
     private static void removeMember(Scanner scanner, LibrarySystem library) {
-
         System.out.print("Enter member ID: ");
         int memberId = scanner.nextInt();
         scanner.nextLine();
@@ -145,7 +153,6 @@ public class LibraryUI {
     }
 
     private static void banMember(Scanner scanner, LibrarySystem library) {
-
         System.out.print("Enter member ID: ");
         int memberId = scanner.nextInt();
         scanner.nextLine();

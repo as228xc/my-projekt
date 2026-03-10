@@ -26,7 +26,7 @@ public class PostgresBookCopyRepository implements BookCopyRepository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to create book copies", e);
         }
     }
 
@@ -51,7 +51,7 @@ public class PostgresBookCopyRepository implements BookCopyRepository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to find available copy", e);
         }
 
         return null;
@@ -68,7 +68,7 @@ public class PostgresBookCopyRepository implements BookCopyRepository {
             stmt.executeUpdate();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to mark copy as borrowed", e);
         }
     }
 
@@ -83,7 +83,7 @@ public class PostgresBookCopyRepository implements BookCopyRepository {
             stmt.executeUpdate();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to mark copy as returned", e);
         }
     }
 
@@ -102,7 +102,7 @@ public class PostgresBookCopyRepository implements BookCopyRepository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to count available copies", e);
         }
 
         return 0;
@@ -123,7 +123,7 @@ public class PostgresBookCopyRepository implements BookCopyRepository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to count total copies", e);
         }
 
         return 0;
