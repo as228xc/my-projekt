@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Library System</title>
+    <link rel="stylesheet" href="stylesheet.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Library System</h1>
+
+    <div class="menu">
+
+        <button onclick="showForm('addMember')">Add Member</button>
+        <button onclick="showForm('addBook')">Add Book</button>
+        <button onclick="showForm('searchBook')">Search Book</button>
+        <button onclick="showForm('lendBook')">Lend Book</button>
+        <button onclick="showForm('returnBook')">Return Book</button>
+
+    </div>
+
+    <div id="formArea"></div>
+
+</div>
+
+<script>
+
+    function showForm(type){
+
+        let form = "";
+
+        if(type === "addMember"){
+            form = `
+<h2>Add Member</h2>
+<input placeholder="Member ID">
+<input placeholder="Firstname">
+<input placeholder="Lastname">
+<input placeholder="Personal number">
+<input placeholder="Member type">
+<button class="submit">Register Member</button>
+`;
+        }
+
+        if(type === "addBook"){
+            form = `
+<h2>Add Book</h2>
+<input placeholder="ISBN">
+<input placeholder="Title">
+<input placeholder="Author">
+<input placeholder="Number of copies">
+<button class="submit">Add Book</button>
+`;
+        }
+
+        if(type === "searchBook"){
+            form = `
+<h2>Search Book</h2>
+<input placeholder="ISBN">
+<button class="submit">Search</button>
+`;
+        }
+
+        if(type === "lendBook"){
+            form = `
+<h2>Lend Book</h2>
+<input placeholder="Member ID">
+<input placeholder="ISBN">
+<button class="submit">Lend Book</button>
+`;
+        }
+
+        if(type === "returnBook"){
+            form = `
+<h2>Return Book</h2>
+<input placeholder="Member ID">
+<input placeholder="ISBN">
+<button class="submit">Return Book</button>
+`;
+        }
+
+        document.getElementById("formArea").innerHTML = form;
+
+    }
+
+</script>
+
+</body>
+</html>

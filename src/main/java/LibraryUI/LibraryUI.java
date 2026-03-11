@@ -3,15 +3,8 @@ package LibraryUI;
 import LibraryDomain.BookTitle;
 import LibraryDomain.Member;
 import LibraryDomain.MemberType;
-import LibraryRepository.BookCopyRepository;
-import LibraryRepository.BookRepository;
-import LibraryRepository.LoanRepository;
-import LibraryRepository.MemberRepository;
-import LibraryService.LibrarySystem;
-import PostgresRepository.PostgresBookCopyRepository;
-import PostgresRepository.PostgresBookRepository;
-import PostgresRepository.PostgresLoanRepository;
-import PostgresRepository.PostgresMemberRepository;
+import LibraryService.LibrarySystemAPI;
+
 
 import java.time.LocalDate;
 import java.util.Scanner;
@@ -21,12 +14,7 @@ public class LibraryUI {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        MemberRepository memberRepo = new PostgresMemberRepository();
-        BookRepository bookRepo = new PostgresBookRepository();
-        BookCopyRepository bookCopyRepo = new PostgresBookCopyRepository();
-        LoanRepository loanRepo = new PostgresLoanRepository();
-
-        LibrarySystem library = new LibrarySystem(memberRepo, bookRepo, bookCopyRepo, loanRepo);
+        LibrarySystemAPI library = App.createSystem();
 
         while (true) {
             System.out.println("\nLIBRARY SYSTEM");
@@ -53,8 +41,8 @@ public class LibraryUI {
                 case 4 -> lendBook(scanner, library);
                 case 5 -> returnBook(scanner, library);
                 case 6 -> searchMember(scanner, library);
-                case 7 -> library.showAllMembers();
-                case 8 -> library.showAllBooks();
+                case 7 -> library.getAllMembers();
+                case 8 -> library.getAllBooks();
                 case 9 -> removeMember(scanner, library);
                 case 10 -> banMember(scanner, library);
                 case 11 -> {
@@ -66,15 +54,13 @@ public class LibraryUI {
         }
     }
 
-    private static void searchMember(Scanner scanner, LibrarySystem library) {
-        System.out.print("Enter member ID: ");
-        int memberId = scanner.nextInt();
-        scanner.nextLine();
-
-        library.searchMemberById(memberId);
+    private static void searchMember(Scanner scanner, LibrarySystemAPI library) {
+        System.out.print("Enter ISBN, title or author: ");
+        String query = scanner.nextLine();
+        library.searchBooks(query);
     }
 
-    private static void addMember(Scanner scanner, LibrarySystem library) {
+    private static void addMember(Scanner scanner, LibrarySystemAPI library) {
         System.out.print("Member ID: ");
         int id = scanner.nextInt();
         scanner.nextLine();
@@ -95,7 +81,7 @@ public class LibraryUI {
         library.registerMember(member);
     }
 
-    private static void addBook(Scanner scanner, LibrarySystem library) {
+    private static void addBook(Scanner scanner, LibrarySystemAPI library) {
         System.out.print("ISBN: ");
         int isbn = scanner.nextInt();
         scanner.nextLine();
@@ -114,13 +100,15 @@ public class LibraryUI {
         library.addBook(book);
     }
 
-    private static void searchBook(Scanner scanner, LibrarySystem library) {
-        System.out.print("Enter ISBN, title or author: ");
-        String query = scanner.nextLine();
-        library.searchBooks(query);
+    private static void searchBook(Scanner scanner, LibrarySystemAPI library) {
+        System.out.print("Enter ISBN: ");
+        int isbn = scanner.nextInt();
+        scanner.nextLine();
+
+        library.findBookByIsbn(isbn);
     }
 
-    private static void lendBook(Scanner scanner, LibrarySystem library) {
+    private static void lendBook(Scanner scanner, LibrarySystemAPI library) {
         System.out.print("Member ID: ");
         int memberId = scanner.nextInt();
 
@@ -131,7 +119,7 @@ public class LibraryUI {
         library.lendBook(memberId, isbn, LocalDate.now());
     }
 
-    private static void returnBook(Scanner scanner, LibrarySystem library) {
+    private static void returnBook(Scanner scanner, LibrarySystemAPI library) {
         System.out.print("Member ID: ");
         int memberId = scanner.nextInt();
 
@@ -142,7 +130,7 @@ public class LibraryUI {
         library.returnBook(memberId, isbn, LocalDate.now());
     }
 
-    private static void removeMember(Scanner scanner, LibrarySystem library) {
+    private static void removeMember(Scanner scanner, LibrarySystemAPI library) {
         System.out.print("Enter member ID: ");
         int memberId = scanner.nextInt();
         scanner.nextLine();
@@ -150,7 +138,7 @@ public class LibraryUI {
         library.removeMember(memberId);
     }
 
-    private static void banMember(Scanner scanner, LibrarySystem library) {
+    private static void banMember(Scanner scanner, LibrarySystemAPI library) {
         System.out.print("Enter member ID: ");
         int memberId = scanner.nextInt();
         scanner.nextLine();
