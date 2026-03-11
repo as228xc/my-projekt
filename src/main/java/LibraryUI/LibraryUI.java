@@ -115,11 +115,9 @@ public class LibraryUI {
     }
 
     private static void searchBook(Scanner scanner, LibrarySystem library) {
-        System.out.print("Enter ISBN: ");
-        int isbn = scanner.nextInt();
-        scanner.nextLine();
-
-        library.searchBookByIsbn(isbn);
+        System.out.print("Enter ISBN, title or author: ");
+        String query = scanner.nextLine();
+        library.searchBooks(query);
     }
 
     private static void lendBook(Scanner scanner, LibrarySystem library) {
