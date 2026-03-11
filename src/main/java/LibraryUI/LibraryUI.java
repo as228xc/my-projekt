@@ -5,6 +5,7 @@ import LibraryDomain.Member;
 import LibraryDomain.MemberType;
 import LibraryService.LibrarySystemAPI;
 
+
 import java.time.LocalDate;
 import java.util.Scanner;
 
@@ -54,11 +55,9 @@ public class LibraryUI {
     }
 
     private static void searchMember(Scanner scanner, LibrarySystemAPI library) {
-        System.out.print("Enter member ID: ");
-        int memberId = scanner.nextInt();
-        scanner.nextLine();
-
-        library.findMemberById(memberId);
+        System.out.print("Enter ISBN, title or author: ");
+        String query = scanner.nextLine();
+        library.searchBooks(query);
     }
 
     private static void addMember(Scanner scanner, LibrarySystemAPI library) {
@@ -72,7 +71,7 @@ public class LibraryUI {
         System.out.print("Lastname: ");
         String lastName = scanner.nextLine();
 
-        System.out.print("Person number: ");
+        System.out.print("Personalnumber: ");
         String personalNumber = scanner.nextLine();
 
         System.out.print("Member type (UNDERGRADUATE, MASTER, PHD, TEACHER): ");

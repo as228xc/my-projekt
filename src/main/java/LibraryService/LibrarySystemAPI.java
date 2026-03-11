@@ -17,5 +17,6 @@ public interface LibrarySystemAPI {
     void getAllBooks();
     void removeMember(int memberId);
     void banMember(int memberId);
+    void searchBooks(String query);
 
 }
