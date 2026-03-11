@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 import java.time.LocalDate;
 import java.util.List;
 
-public class LibrarySystem {
+public class LibrarySystem implements LibrarySystemAPI {
 
     private static final Logger logger = LogManager.getLogger(LibrarySystem.class);
 
@@ -32,7 +32,7 @@ public class LibrarySystem {
         this.loanRepository = loanRepository;
     }
 
-    public void showAllMembers() {
+    public void getAllMembers() {
         List<Member> members = memberRepository.findAll();
 
         if (members.isEmpty()) {
@@ -60,7 +60,7 @@ public class LibrarySystem {
         }
     }
 
-    public void showAllBooks() {
+    public void getAllBooks() {
         List<BookTitle> books = bookRepository.findAll();
 
         if (books.isEmpty()) {
@@ -129,7 +129,7 @@ public class LibrarySystem {
         logger.info("Member registered successfully. memberId={}, personalNumber={}", member.getMemberId(), personalNumber);
     }
 
-    public void searchMemberById(int memberId) {
+    public void findMemberById(int memberId) {
         Member member = memberRepository.findById(memberId);
 
         if (member == null) {
@@ -172,7 +172,7 @@ public class LibrarySystem {
                 book.getIsbn(), book.getTitle(), book.getTotalCopies());
     }
 
-    public void searchBookByIsbn(int isbn) {
+    public void findBookByIsbn(int isbn) {
         BookTitle book = bookRepository.findByIsbn(isbn);
 
         if (book == null) {
