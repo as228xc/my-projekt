@@ -5,6 +5,7 @@ import java.util.List;
 
 public interface BookRepository {
     BookTitle findByIsbn(int isbn);
+    List<BookTitle> search(String query);
     void save(BookTitle book);
     void update(BookTitle book);
     List<BookTitle> findAll();

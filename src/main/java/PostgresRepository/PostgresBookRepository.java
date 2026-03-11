@@ -125,4 +125,51 @@ public class PostgresBookRepository implements BookRepository {
 
         return books;
     }
+    @Override
+    public List<BookTitle> search(String query){
+        List<BookTitle> books = new ArrayList<>();
+        String sql = """
+        SELECT bt.isbn, bt.title, bt.author,
+               COUNT(bc.copy_id) AS total_copies,
+               COUNT(CASE WHEN bc.available = true THEN 1 END) AS available_copies
+        FROM book_titles bt
+        LEFT JOIN book_copies bc ON bt.isbn = bc.isbn
+        WHERE
+            CAST(bt.isbn AS TEXT) LIKE ?
+            OR LOWER(bt.title) LIKE LOWER(?)
+            OR LOWER(bt.author) LIKE LOWER(?)
+        GROUP BY bt.isbn, bt.title, bt.author
+        ORDER BY bt.title
+        """;
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            String pattern = "%" + query + "%";
+
+            stmt.setString(1, pattern);
+            stmt.setString(2, pattern);
+            stmt.setString(3, pattern);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+
+                BookTitle book = new BookTitle(
+                        rs.getInt("isbn"),
+                        rs.getString("title"),
+                        rs.getString("author"),
+                        rs.getInt("total_copies")
+                );
+
+                book.setAvailableCopies(rs.getInt("available_copies"));
+                books.add(book);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Search failed", e);
+        }
+
+        return books;
+    }
 }

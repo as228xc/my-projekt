@@ -171,6 +171,24 @@ public class LibrarySystem {
         logger.info("Book added successfully. ISBN={}, title={}, copies={}",
                 book.getIsbn(), book.getTitle(), book.getTotalCopies());
     }
+    public void searchBooks(String query) {
+
+        List<BookTitle> books = bookRepository.search(query);
+
+        if (books.isEmpty()) {
+            System.out.println("No books found.");
+            return;
+        }
+
+        for (BookTitle book : books) {
+
+            System.out.println("ISBN: " + book.getIsbn());
+            System.out.println("Title: " + book.getTitle());
+            System.out.println("Author: " + book.getAuthor());
+            System.out.println("Available copies: " + book.getAvailableCopies());
+            System.out.println();
+        }
+    }
 
     public void searchBookByIsbn(int isbn) {
         BookTitle book = bookRepository.findByIsbn(isbn);
