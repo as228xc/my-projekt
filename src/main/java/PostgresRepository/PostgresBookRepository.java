@@ -47,7 +47,7 @@ public class PostgresBookRepository implements BookRepository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to find book by ISBN", e);
         }
 
         return null;
@@ -67,7 +67,25 @@ public class PostgresBookRepository implements BookRepository {
             stmt.executeUpdate();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to save book title", e);
+        }
+    }
+
+    @Override
+    public void update(BookTitle book) {
+        String sql = "UPDATE book_titles SET title = ?, author = ? WHERE isbn = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, book.getTitle());
+            stmt.setString(2, book.getAuthor());
+            stmt.setInt(3, book.getIsbn());
+
+            stmt.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update book title", e);
         }
     }
 
@@ -102,27 +120,9 @@ public class PostgresBookRepository implements BookRepository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch all books", e);
         }
 
         return books;
-    }
-
-    @Override
-    public void update(BookTitle book) {
-        String sql = "UPDATE book_titles SET title = ?, author = ? WHERE isbn = ?";
-
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, book.getTitle());
-            stmt.setString(2, book.getAuthor());
-            stmt.setInt(3, book.getIsbn());
-
-            stmt.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

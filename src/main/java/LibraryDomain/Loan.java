@@ -7,12 +7,27 @@ public class Loan {
     private final int copyId;
     private final LocalDate loanDate;
     private final LocalDate dueDate;
+    private LocalDate returnDate;
 
     public Loan(int memberId, int copyId, LocalDate loanDate, LocalDate dueDate) {
         this.memberId = memberId;
         this.copyId = copyId;
         this.loanDate = loanDate;
         this.dueDate = dueDate;
+        this.returnDate = null;
+    }
+
+    public void markReturned(LocalDate returnDate) {
+        this.returnDate = returnDate;
+    }
+
+    public boolean isReturned() {
+        return returnDate != null;
+    }
+
+    public boolean isLate(LocalDate today) {
+        LocalDate checkDate = (returnDate != null) ? returnDate : today;
+        return checkDate.isAfter(dueDate);
     }
 
     public int getMemberId() {
@@ -29,5 +44,9 @@ public class Loan {
 
     public LocalDate getDueDate() {
         return dueDate;
+    }
+
+    public LocalDate getReturnDate() {
+        return returnDate;
     }
 }

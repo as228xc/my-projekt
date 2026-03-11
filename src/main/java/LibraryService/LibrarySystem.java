@@ -1,26 +1,31 @@
 package LibraryService;
 
 import LibraryDomain.BookTitle;
-import LibraryDomain.Member;
 import LibraryDomain.Loan;
+import LibraryDomain.Member;
+import LibraryRepository.BookCopyRepository;
 import LibraryRepository.BookRepository;
 import LibraryRepository.LoanRepository;
 import LibraryRepository.MemberRepository;
-import LibraryRepository.BookCopyRepository;
-import java.time.LocalDate;
-import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.time.LocalDate;
+import java.util.List;
 
 public class LibrarySystem {
 
     private static final Logger logger = LogManager.getLogger(LibrarySystem.class);
+
     private final MemberRepository memberRepository;
     private final BookRepository bookRepository;
     private final BookCopyRepository bookCopyRepository;
     private final LoanRepository loanRepository;
 
-    public LibrarySystem(MemberRepository memberRepository, BookRepository bookRepository, BookCopyRepository bookCopyRepository,LoanRepository loanRepository) {
+    public LibrarySystem(MemberRepository memberRepository,
+                         BookRepository bookRepository,
+                         BookCopyRepository bookCopyRepository,
+                         LoanRepository loanRepository) {
         this.memberRepository = memberRepository;
         this.bookRepository = bookRepository;
         this.bookCopyRepository = bookCopyRepository;
@@ -38,18 +43,20 @@ public class LibrarySystem {
 
         logger.info("Showing all members. Count={}", members.size());
 
-        System.out.println("\n ALL MEMBERS");
+        System.out.println("\nALL MEMBERS");
         for (Member member : members) {
+            int activeLoans = loanRepository.countActiveLoansByMemberId(member.getMemberId());
+
             System.out.println("Member ID: " + member.getMemberId());
             System.out.println("Name: " + member.getFirstName() + " " + member.getLastName());
             System.out.println("Personal number: " + member.getPersonalNumber());
             System.out.println("Member type: " + member.getMemberType());
             System.out.println("Active account: " + member.isActive());
-            System.out.println("Borrowed books: " + member.getBorrowedCount());
+            System.out.println("Borrowed books: " + activeLoans);
             System.out.println("Late returns: " + member.getLateReturnsCount());
             System.out.println("Suspensions: " + member.getSuspensionsCount());
             System.out.println("Suspended until: " + member.getSuspendedUntil());
-            System.out.println(" ");
+            System.out.println();
         }
     }
 
@@ -64,19 +71,18 @@ public class LibrarySystem {
 
         logger.info("Showing all books. Count={}", books.size());
 
-        System.out.println("\n ALL BOOKS");
+        System.out.println("\nALL BOOKS");
         for (BookTitle book : books) {
             System.out.println("ISBN: " + book.getIsbn());
             System.out.println("Title: " + book.getTitle());
             System.out.println("Author: " + book.getAuthor());
             System.out.println("Total copies: " + book.getTotalCopies());
             System.out.println("Available copies: " + book.getAvailableCopies());
-            System.out.println(" ");
+            System.out.println();
         }
     }
 
     public void registerMember(Member member) {
-
         if (member == null) {
             System.out.println("Member cannot be null.");
             logger.error("Attempted to register a null member.");
@@ -132,16 +138,18 @@ public class LibrarySystem {
             return;
         }
 
+        int activeLoans = loanRepository.countActiveLoansByMemberId(memberId);
+
         logger.info("Member found. memberId={}", memberId);
 
-        System.out.println("\n MEMBER INFORMATION ");
+        System.out.println("\nMEMBER INFORMATION");
         System.out.println("Member ID: " + member.getMemberId());
         System.out.println("Firstname: " + member.getFirstName());
         System.out.println("Lastname: " + member.getLastName());
         System.out.println("Personalnumber: " + member.getPersonalNumber());
         System.out.println("Member type: " + member.getMemberType());
         System.out.println("Account active: " + member.isActive());
-        System.out.println("Borrowed books: " + member.getBorrowedCount());
+        System.out.println("Borrowed books: " + activeLoans);
         System.out.println("Late returns: " + member.getLateReturnsCount());
         System.out.println("Number of suspensions: " + member.getSuspensionsCount());
         System.out.println("Suspended until: " + member.getSuspendedUntil());
@@ -158,8 +166,10 @@ public class LibrarySystem {
 
         bookRepository.save(book);
         bookCopyRepository.createCopies(book.getIsbn(), book.getTotalCopies());
+
         System.out.println("Book added successfully.");
-        logger.info("Book added successfully. ISBN={}, title={}", book.getIsbn(), book.getTitle());
+        logger.info("Book added successfully. ISBN={}, title={}, copies={}",
+                book.getIsbn(), book.getTitle(), book.getTotalCopies());
     }
 
     public void searchBookByIsbn(int isbn) {
@@ -218,11 +228,12 @@ public class LibrarySystem {
 
         bookCopyRepository.markCopyAsBorrowed(copyId);
 
-        member.incrementBorrowedCount();
-        memberRepository.update(member);
-
         Loan loan = new Loan(memberId, copyId, today, today.plusDays(14));
         loanRepository.save(loan);
+
+        int activeLoans = loanRepository.countActiveLoansByMemberId(memberId);
+        member.setBorrowedCount(activeLoans);
+        memberRepository.update(member);
 
         System.out.println("Book lent successfully.");
         logger.info("Book lent successfully. memberId={}, isbn={}, copyId={}", memberId, isbn, copyId);
@@ -230,7 +241,6 @@ public class LibrarySystem {
 
     public void returnBook(int memberId, int isbn, LocalDate today) {
         Member member = memberRepository.findById(memberId);
-        BookTitle book = bookRepository.findByIsbn(isbn);
 
         if (member == null) {
             System.out.println("Member not found.");
@@ -238,24 +248,38 @@ public class LibrarySystem {
             return;
         }
 
-        if (book == null) {
-            System.out.println("Book not found.");
-            logger.warn("Return book failed. ISBN {} not found.", isbn);
+        Loan loan = loanRepository.findActiveLoanByMemberIdAndIsbn(memberId, isbn);
+
+        if (loan == null) {
+            System.out.println("No active loan found for this member and book.");
+            logger.warn("Return book failed. No active loan found for memberId={} and isbn={}", memberId, isbn);
             return;
         }
 
-        book.returnOne();
-        member.decrementBorrowedCount();
+        bookCopyRepository.markCopyAsReturned(loan.getCopyId());
+        loanRepository.markLoanAsReturned(loan.getCopyId());
 
-        bookRepository.update(book);
+        if (loan.isLate(today)) {
+            member.registerLateReturn(today);
+            logger.warn("Late return registered. memberId={}, isbn={}, copyId={}", memberId, isbn, loan.getCopyId());
+
+            if (member.getSuspensionsCount() > 2) {
+                memberRepository.blacklistMember(memberId);
+                System.out.println("Member has been blacklisted due to repeated suspensions.");
+                logger.error("Member {} blacklisted after repeated suspensions.", memberId);
+                return;
+            }
+        }
+
+        int activeLoans = loanRepository.countActiveLoansByMemberId(memberId);
+        member.setBorrowedCount(activeLoans);
         memberRepository.update(member);
 
         System.out.println("Book returned successfully.");
-        logger.info("Book returned successfully. memberId={}, isbn={}", memberId, isbn);
+        logger.info("Book returned successfully. memberId={}, isbn={}, copyId={}", memberId, isbn, loan.getCopyId());
     }
 
     public void removeMember(int memberId) {
-
         Member member = memberRepository.findById(memberId);
 
         if (member == null) {
@@ -270,7 +294,6 @@ public class LibrarySystem {
     }
 
     public void banMember(int memberId) {
-
         Member member = memberRepository.findById(memberId);
 
         if (member == null) {
@@ -282,33 +305,5 @@ public class LibrarySystem {
         memberRepository.blacklistMember(memberId);
         System.out.println("Member has been blacklisted and cannot register again.");
         logger.warn("Member {} was blacklisted.", memberId);
-    }
-
-    public void handleLateReturn(int memberId) {
-
-        Member member = memberRepository.findById(memberId);
-
-        if (member == null) {
-            System.out.println("Member not found.");
-            logger.warn("Late return handling failed: member {} not found.", memberId);
-            return;
-        }
-
-        member.registerLateReturn(java.time.LocalDate.now());
-
-        logger.info("Late return registered for memberId={}. Late returns={}",
-                memberId, member.getLateReturnsCount());
-
-        if (member.getLateReturnsCount() > 2) {
-            logger.warn("Member {} has exceeded allowed late returns and will be suspended.", memberId);
-        }
-
-        if (member.getSuspensionsCount() > 2) {
-            memberRepository.blacklistMember(memberId);
-            System.out.println("Member has been blacklisted due to repeated suspensions.");
-            logger.error("Member {} was automatically blacklisted after more than two suspensions.", memberId);
-        } else {
-            memberRepository.update(member);
-        }
     }
 }

@@ -19,19 +19,6 @@ public class BookTitle {
         return availableCopies > 0;
     }
 
-    public void borrowOne() {
-        if (!hasAvailableCopy()) {
-            throw new IllegalStateException("No available copies for ISBN " + isbn);
-        }
-        availableCopies--;
-    }
-
-    public void returnOne() {
-        if (availableCopies < totalCopies) {
-            availableCopies++;
-        }
-    }
-
     public int getIsbn() {
         return isbn;
     }
