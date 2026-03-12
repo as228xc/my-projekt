@@ -306,13 +306,21 @@ public class LibrarySystem implements LibrarySystemAPI {
 
         if (member == null) {
             System.out.println("Member not found.");
-            logger.warn("Attempted to deactivate non-existing memberId={}", memberId);
+            logger.warn("Attempted to delete non-existing memberId={}", memberId);
             return;
         }
 
-        memberRepository.deactivateMember(memberId);
-        System.out.println("Member account deactivated.");
-        logger.info("Member account deactivated. memberId={}", memberId);
+        int activeLoans = loanRepository.countActiveLoansByMemberId(memberId);
+
+        if (activeLoans > 0) {
+            System.out.println("Cannot delete member. Member still has borrowed books.");
+            logger.warn("Attempted to delete member {} who still has {} active loans", memberId, activeLoans);
+            return;
+        }
+
+        memberRepository.delete(memberId);
+        System.out.println("Member deleted successfully.");
+        logger.info("Member {} deleted from system", memberId);
     }
 
     public void banMember(int memberId) {

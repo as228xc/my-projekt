@@ -106,7 +106,7 @@ public class LibraryUI {
             System.out.println("6. Search member by ID");
             System.out.println("7. Show all members");
             System.out.println("8. Show all books");
-            System.out.println("9. Remove member");
+            System.out.println("9. Delete member");
             System.out.println("10. Ban member");
             System.out.println("11. Delete book");
             System.out.println("12. Logout");
