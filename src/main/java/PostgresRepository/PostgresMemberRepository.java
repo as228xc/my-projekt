@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.sql.*;
+import java.sql.Date;
 
 public class PostgresMemberRepository implements MemberRepository {
 
@@ -20,7 +20,6 @@ public class PostgresMemberRepository implements MemberRepository {
 
     @Override
     public Member findById(int memberId) {
-
         String sql = "SELECT * FROM members WHERE member_id = ?";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -30,28 +29,7 @@ public class PostgresMemberRepository implements MemberRepository {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-
-                int id = rs.getInt("member_id");
-                String firstName = rs.getString("first_name");
-                String lastName = rs.getString("last_name");
-                String personalNumber = rs.getString("personal_number");
-                MemberType type = MemberType.valueOf(rs.getString("member_type"));
-
-                Member member = new Member(id, firstName, lastName, personalNumber, type);
-
-                member.setActive(rs.getBoolean("active"));
-                member.setBorrowedCount(rs.getInt("borrowed_count"));
-                member.setLateReturnsCount(rs.getInt("late_returns_count"));
-                member.setSuspensionsCount(rs.getInt("suspensions_count"));
-
-                Date suspendedDate = rs.getDate("suspended_until");
-                if (suspendedDate != null) {
-                    member.setSuspendedUntil(suspendedDate.toLocalDate());
-                }
-
-                member.setBlacklisted(rs.getBoolean("blacklisted"));
-
-                return member;
+                return mapMember(rs);
             }
 
         } catch (Exception e) {
@@ -63,7 +41,6 @@ public class PostgresMemberRepository implements MemberRepository {
 
     @Override
     public Member findByPersonalNumber(String personalNumber) {
-
         String sql = "SELECT * FROM members WHERE personal_number = ?";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -73,28 +50,30 @@ public class PostgresMemberRepository implements MemberRepository {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
+                return mapMember(rs);
+            }
 
-                int id = rs.getInt("member_id");
-                String firstName = rs.getString("first_name");
-                String lastName = rs.getString("last_name");
-                String pnr = rs.getString("personal_number");
-                MemberType type = MemberType.valueOf(rs.getString("member_type"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-                Member member = new Member(id, firstName, lastName, pnr, type);
+        return null;
+    }
 
-                member.setActive(rs.getBoolean("active"));
-                member.setBorrowedCount(rs.getInt("borrowed_count"));
-                member.setLateReturnsCount(rs.getInt("late_returns_count"));
-                member.setSuspensionsCount(rs.getInt("suspensions_count"));
+    @Override
+    public Member findByIdAndPassword(int memberId, String password) {
+        String sql = "SELECT * FROM members WHERE member_id = ? AND password = ?";
 
-                Date suspendedDate = rs.getDate("suspended_until");
-                if (suspendedDate != null) {
-                    member.setSuspendedUntil(suspendedDate.toLocalDate());
-                }
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                member.setBlacklisted(rs.getBoolean("blacklisted"));
+            stmt.setInt(1, memberId);
+            stmt.setString(2, password);
 
-                return member;
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return mapMember(rs);
             }
 
         } catch (Exception e) {
@@ -106,7 +85,7 @@ public class PostgresMemberRepository implements MemberRepository {
 
     @Override
     public void save(Member member) {
-        String sql = "INSERT INTO members(member_id, first_name, last_name, personal_number, member_type) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO members(member_id, first_name, last_name, personal_number, member_type, password) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -116,6 +95,7 @@ public class PostgresMemberRepository implements MemberRepository {
             stmt.setString(3, member.getLastName());
             stmt.setString(4, member.getPersonalNumber());
             stmt.setString(5, member.getMemberType().name());
+            stmt.setString(6, member.getPassword());
 
             stmt.executeUpdate();
             System.out.println("Member saved to database");
@@ -172,9 +152,7 @@ public class PostgresMemberRepository implements MemberRepository {
 
     @Override
     public List<Member> findAll() {
-
         List<Member> members = new ArrayList<>();
-
         String sql = "SELECT * FROM members";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
@@ -182,28 +160,7 @@ public class PostgresMemberRepository implements MemberRepository {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-
-                int id = rs.getInt("member_id");
-                String firstName = rs.getString("first_name");
-                String lastName = rs.getString("last_name");
-                String personalNumber = rs.getString("personal_number");
-                MemberType type = MemberType.valueOf(rs.getString("member_type"));
-
-                Member member = new Member(id, firstName, lastName, personalNumber, type);
-
-                member.setActive(rs.getBoolean("active"));
-                member.setBorrowedCount(rs.getInt("borrowed_count"));
-                member.setLateReturnsCount(rs.getInt("late_returns_count"));
-                member.setSuspensionsCount(rs.getInt("suspensions_count"));
-
-                Date suspendedDate = rs.getDate("suspended_until");
-                if (suspendedDate != null) {
-                    member.setSuspendedUntil(suspendedDate.toLocalDate());
-                }
-
-                member.setBlacklisted(rs.getBoolean("blacklisted"));
-
-                members.add(member);
+                members.add(mapMember(rs));
             }
 
         } catch (Exception e) {
@@ -218,7 +175,7 @@ public class PostgresMemberRepository implements MemberRepository {
         String sql = """
             UPDATE members
             SET first_name = ?, last_name = ?, personal_number = ?, member_type = ?,
-                active = ?, borrowed_count = ?, late_returns_count = ?,
+                password = ?, active = ?, borrowed_count = ?, late_returns_count = ?,
                 suspensions_count = ?, suspended_until = ?, blacklisted = ?
             WHERE member_id = ?
             """;
@@ -230,24 +187,50 @@ public class PostgresMemberRepository implements MemberRepository {
             stmt.setString(2, member.getLastName());
             stmt.setString(3, member.getPersonalNumber());
             stmt.setString(4, member.getMemberType().name());
-            stmt.setBoolean(5, member.isActive());
-            stmt.setInt(6, member.getBorrowedCount());
-            stmt.setInt(7, member.getLateReturnsCount());
-            stmt.setInt(8, member.getSuspensionsCount());
+            stmt.setString(5, member.getPassword());
+            stmt.setBoolean(6, member.isActive());
+            stmt.setInt(7, member.getBorrowedCount());
+            stmt.setInt(8, member.getLateReturnsCount());
+            stmt.setInt(9, member.getSuspensionsCount());
 
             if (member.getSuspendedUntil() != null) {
-                stmt.setDate(9, java.sql.Date.valueOf(member.getSuspendedUntil()));
+                stmt.setDate(10, java.sql.Date.valueOf(member.getSuspendedUntil()));
             } else {
-                stmt.setNull(9, java.sql.Types.DATE);
+                stmt.setNull(10, java.sql.Types.DATE);
             }
 
-            stmt.setBoolean(10, member.isBlacklisted());
-            stmt.setInt(11, member.getMemberId());
+            stmt.setBoolean(11, member.isBlacklisted());
+            stmt.setInt(12, member.getMemberId());
 
             stmt.executeUpdate();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private Member mapMember(ResultSet rs) throws Exception {
+        int id = rs.getInt("member_id");
+        String firstName = rs.getString("first_name");
+        String lastName = rs.getString("last_name");
+        String personalNumber = rs.getString("personal_number");
+        MemberType type = MemberType.valueOf(rs.getString("member_type"));
+        String password = rs.getString("password");
+
+        Member member = new Member(id, firstName, lastName, personalNumber, type, password);
+
+        member.setActive(rs.getBoolean("active"));
+        member.setBorrowedCount(rs.getInt("borrowed_count"));
+        member.setLateReturnsCount(rs.getInt("late_returns_count"));
+        member.setSuspensionsCount(rs.getInt("suspensions_count"));
+
+        Date suspendedDate = rs.getDate("suspended_until");
+        if (suspendedDate != null) {
+            member.setSuspendedUntil(suspendedDate.toLocalDate());
+        }
+
+        member.setBlacklisted(rs.getBoolean("blacklisted"));
+
+        return member;
     }
 }

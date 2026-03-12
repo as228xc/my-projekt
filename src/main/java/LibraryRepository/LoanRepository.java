@@ -7,4 +7,5 @@ public interface LoanRepository {
     Loan findActiveLoanByMemberIdAndIsbn(int memberId, int isbn);
     void markLoanAsReturned(int copyId);
     int countActiveLoansByMemberId(int memberId);
+    boolean hasActiveLoansByIsbn(int isbn);
 }

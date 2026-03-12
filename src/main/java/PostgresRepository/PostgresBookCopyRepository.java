@@ -88,6 +88,21 @@ public class PostgresBookCopyRepository implements BookCopyRepository {
     }
 
     @Override
+    public void deleteCopiesByIsbn(int isbn) {
+        String sql = "DELETE FROM book_copies WHERE isbn = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, isbn);
+            stmt.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete book copies", e);
+        }
+    }
+
+    @Override
     public int countAvailableCopies(int isbn) {
         String sql = "SELECT COUNT(*) FROM book_copies WHERE isbn = ? AND available = true";
 

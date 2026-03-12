@@ -156,6 +156,12 @@ public class LibrarySystem implements LibrarySystemAPI {
     }
 
     public void addBook(BookTitle book) {
+        if (book == null) {
+            System.out.println("Book cannot be null.");
+            logger.error("Attempted to add a null book.");
+            return;
+        }
+
         BookTitle existing = bookRepository.findByIsbn(book.getIsbn());
 
         if (existing != null) {
@@ -171,8 +177,31 @@ public class LibrarySystem implements LibrarySystemAPI {
         logger.info("Book added successfully. ISBN={}, title={}, copies={}",
                 book.getIsbn(), book.getTitle(), book.getTotalCopies());
     }
-    public void searchBooks(String query) {
 
+    @Override
+    public void deleteBook(int isbn) {
+        BookTitle book = bookRepository.findByIsbn(isbn);
+
+        if (book == null) {
+            System.out.println("Book not found.");
+            logger.warn("Delete book failed. ISBN {} not found.", isbn);
+            return;
+        }
+
+        if (loanRepository.hasActiveLoansByIsbn(isbn)) {
+            System.out.println("Book cannot be deleted because there are active loans connected to it.");
+            logger.warn("Delete book denied. ISBN {} has active loans.", isbn);
+            return;
+        }
+
+        bookCopyRepository.deleteCopiesByIsbn(isbn);
+        bookRepository.deleteByIsbn(isbn);
+
+        System.out.println("Book deleted successfully.");
+        logger.info("Book deleted successfully. ISBN={}, title={}", isbn, book.getTitle());
+    }
+
+    public void searchBooks(String query) {
         List<BookTitle> books = bookRepository.search(query);
 
         if (books.isEmpty()) {
@@ -181,36 +210,11 @@ public class LibrarySystem implements LibrarySystemAPI {
         }
 
         for (BookTitle book : books) {
-
             System.out.println("ISBN: " + book.getIsbn());
             System.out.println("Title: " + book.getTitle());
             System.out.println("Author: " + book.getAuthor());
             System.out.println("Available copies: " + book.getAvailableCopies());
             System.out.println();
-        }
-    }
-
-    public void findBookByIsbn(int isbn) {
-        BookTitle book = bookRepository.findByIsbn(isbn);
-
-        if (book == null) {
-            System.out.println("Book not found.");
-            logger.warn("Book search failed. ISBN {} not found.", isbn);
-            return;
-        }
-
-        logger.info("Book found. ISBN={}, title={}", isbn, book.getTitle());
-
-        System.out.println("Title: " + book.getTitle());
-        System.out.println("Author: " + book.getAuthor());
-        System.out.println("ISBN: " + book.getIsbn());
-        System.out.println("Available copies: " + book.getAvailableCopies());
-
-        if (book.hasAvailableCopy()) {
-            System.out.println("This book can be borrowed.");
-        } else {
-            System.out.println("No copies available right now.");
-            logger.info("Book ISBN {} found, but no copies are currently available.", isbn);
         }
     }
 

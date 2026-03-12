@@ -8,6 +8,7 @@ public class Member {
     private final String lastName;
     private final String personalNumber;
     private final MemberType memberType;
+    private String password;
 
     private boolean active;
     private int borrowedCount;
@@ -17,12 +18,13 @@ public class Member {
     private boolean blacklisted;
 
     public Member(int memberId, String firstName, String lastName,
-                  String personalNumber, MemberType memberType) {
+                  String personalNumber, MemberType memberType, String password) {
         this.memberId = memberId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.personalNumber = personalNumber;
         this.memberType = memberType;
+        this.password = password;
         this.active = true;
         this.borrowedCount = 0;
         this.lateReturnsCount = 0;
@@ -114,6 +116,10 @@ public class Member {
         return lastName;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
     public void setBlacklisted(boolean blacklisted) {
         this.blacklisted = blacklisted;
     }
@@ -137,5 +143,8 @@ public class Member {
     public void setSuspendedUntil(LocalDate suspendedUntil) {
         this.suspendedUntil = suspendedUntil;
     }
-}
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}

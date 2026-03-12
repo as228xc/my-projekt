@@ -1,37 +1,34 @@
 package LibraryDomain;
-
 import org.junit.jupiter.api.Test;
-
 import java.time.LocalDate;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class MemberTest {
 
     @Test
     void undergraduateShouldHaveMaxThreeLoans() {
-        Member member = new Member(1, "Anna", "Karlsson", "199901011234", MemberType.UNDERGRADUATE);
+        Member member = new Member(1, "Anna", "Karlsson", "199901011234", MemberType.UNDERGRADUATE, "test123");
 
         assertEquals(3, member.getMaxLoans());
     }
 
     @Test
     void teacherShouldHaveMaxTenLoans() {
-        Member member = new Member(2, "Ophelia", "Huovila", "198001011234", MemberType.TEACHER);
+        Member member = new Member(2, "Ophelia", "Huovila", "198001011234", MemberType.TEACHER, "test");
 
         assertEquals(10, member.getMaxLoans());
     }
 
     @Test
     void memberShouldBeAbleToBorrowWhenActiveAndUnderLimit() {
-        Member member = new Member(3, "Alma", "Svensson", "199501011234", MemberType.MASTER);
+        Member member = new Member(3, "Alma", "Svensson", "199501011234", MemberType.MASTER, "test");
 
         assertTrue(member.canBorrow(LocalDate.now()));
     }
 
     @Test
     void memberShouldNotBeAbleToBorrowWhenAtLimit() {
-        Member member = new Member(4, "Elin", "Tonning", "199701011234", MemberType.UNDERGRADUATE);
+        Member member = new Member(4, "Elin", "Tonning", "199701011234", MemberType.UNDERGRADUATE, "test");
 
         member.incrementBorrowedCount();
         member.incrementBorrowedCount();
@@ -42,7 +39,7 @@ class MemberTest {
 
     @Test
     void memberShouldBeSuspendedAfterMoreThanTwoLateReturns() {
-        Member member = new Member(5, "Sara", "Holm", "199301011234", MemberType.PHD);
+        Member member = new Member(5, "Sara", "Holm", "199301011234", MemberType.PHD, "test");
         LocalDate today = LocalDate.of(2026, 3, 10);
 
         member.registerLateReturn(today);
@@ -54,7 +51,7 @@ class MemberTest {
 
     @Test
     void memberShouldBecomeInactiveAfterMoreThanTwoSuspensions() {
-        Member member = new Member(6, "Erik", "Berg", "199201011234", MemberType.MASTER);
+        Member member = new Member(6, "Erik", "Berg", "199201011234", MemberType.MASTER, "test");
         LocalDate today = LocalDate.of(2026, 3, 10);
 
         member.suspend(today.plusDays(15));

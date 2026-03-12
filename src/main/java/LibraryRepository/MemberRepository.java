@@ -1,12 +1,12 @@
 package LibraryRepository;
 
 import LibraryDomain.Member;
-
 import java.util.List;
 
 public interface MemberRepository {
     Member findById(int memberId);
     Member findByPersonalNumber(String personalNumber);
+    Member findByIdAndPassword(int memberId, String password);
     void deactivateMember(int memberId);
     void blacklistMember(int memberId);
     void save(Member member);
