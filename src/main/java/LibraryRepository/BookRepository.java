@@ -8,5 +8,6 @@ public interface BookRepository {
     List<BookTitle> search(String query);
     void save(BookTitle book);
     void update(BookTitle book);
+    void deleteByIsbn(int isbn);
     List<BookTitle> findAll();
 }

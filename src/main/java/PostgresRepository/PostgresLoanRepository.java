@@ -111,4 +111,30 @@ public class PostgresLoanRepository implements LoanRepository {
 
         return 0;
     }
+
+    @Override
+    public boolean hasActiveLoansByIsbn(int isbn) {
+        String sql = """
+                SELECT COUNT(*)
+                FROM loans l
+                JOIN book_copies bc ON l.copy_id = bc.copy_id
+                WHERE bc.isbn = ? AND l.return_date IS NULL
+                """;
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, isbn);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to check active loans for book", e);
+        }
+
+        return false;
+    }
 }

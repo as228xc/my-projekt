@@ -9,8 +9,8 @@ public interface LibrarySystemAPI {
 
     void registerMember(Member member);
     void addBook(BookTitle book);
-    void findBookByIsbn(int isbn);
-    void lendBook (int memberId, int isbn, LocalDate date);
+    void deleteBook(int isbn);
+    void lendBook(int memberId, int isbn, LocalDate date);
     void returnBook(int memberId, int isbn, LocalDate date);
     void findMemberById(int memberId);
     void getAllMembers();
@@ -18,5 +18,4 @@ public interface LibrarySystemAPI {
     void removeMember(int memberId);
     void banMember(int memberId);
     void searchBooks(String query);
-
 }

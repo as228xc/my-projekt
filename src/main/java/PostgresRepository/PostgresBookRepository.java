@@ -90,6 +90,21 @@ public class PostgresBookRepository implements BookRepository {
     }
 
     @Override
+    public void deleteByIsbn(int isbn) {
+        String sql = "DELETE FROM book_titles WHERE isbn = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, isbn);
+            stmt.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete book title", e);
+        }
+    }
+
+    @Override
     public List<BookTitle> findAll() {
         List<BookTitle> books = new ArrayList<>();
 
@@ -125,22 +140,23 @@ public class PostgresBookRepository implements BookRepository {
 
         return books;
     }
+
     @Override
-    public List<BookTitle> search(String query){
+    public List<BookTitle> search(String query) {
         List<BookTitle> books = new ArrayList<>();
         String sql = """
-        SELECT bt.isbn, bt.title, bt.author,
-               COUNT(bc.copy_id) AS total_copies,
-               COUNT(CASE WHEN bc.available = true THEN 1 END) AS available_copies
-        FROM book_titles bt
-        LEFT JOIN book_copies bc ON bt.isbn = bc.isbn
-        WHERE
-            CAST(bt.isbn AS TEXT) LIKE ?
-            OR LOWER(bt.title) LIKE LOWER(?)
-            OR LOWER(bt.author) LIKE LOWER(?)
-        GROUP BY bt.isbn, bt.title, bt.author
-        ORDER BY bt.title
-        """;
+                SELECT bt.isbn, bt.title, bt.author,
+                       COUNT(bc.copy_id) AS total_copies,
+                       COUNT(CASE WHEN bc.available = true THEN 1 END) AS available_copies
+                FROM book_titles bt
+                LEFT JOIN book_copies bc ON bt.isbn = bc.isbn
+                WHERE
+                    CAST(bt.isbn AS TEXT) LIKE ?
+                    OR LOWER(bt.title) LIKE LOWER(?)
+                    OR LOWER(bt.author) LIKE LOWER(?)
+                GROUP BY bt.isbn, bt.title, bt.author
+                ORDER BY bt.title
+                """;
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -154,7 +170,6 @@ public class PostgresBookRepository implements BookRepository {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-
                 BookTitle book = new BookTitle(
                         rs.getInt("isbn"),
                         rs.getString("title"),
