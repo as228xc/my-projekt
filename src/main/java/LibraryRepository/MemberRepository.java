@@ -7,7 +7,6 @@ public interface MemberRepository {
     Member findById(int memberId);
     Member findByPersonalNumber(String personalNumber);
     Member findByIdAndPassword(int memberId, String password);
-    void deactivateMember(int memberId);
     void blacklistMember(int memberId);
     void save(Member member);
     void delete(int memberId);

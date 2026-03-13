@@ -48,7 +48,6 @@ public class PostgresLoanRepository implements LoanRepository {
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setInt(1, memberId);
             stmt.setInt(2, isbn);
             ResultSet rs = stmt.executeQuery();
@@ -60,12 +59,10 @@ public class PostgresLoanRepository implements LoanRepository {
                         rs.getDate("loan_date").toLocalDate(),
                         rs.getDate("due_date").toLocalDate()
                 );
-
                 Date returnDate = rs.getDate("return_date");
                 if (returnDate != null) {
                     loan.markReturned(returnDate.toLocalDate());
                 }
-
                 return loan;
             }
 

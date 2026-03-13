@@ -72,24 +72,6 @@ public class PostgresBookRepository implements BookRepository {
     }
 
     @Override
-    public void update(BookTitle book) {
-        String sql = "UPDATE book_titles SET title = ?, author = ? WHERE isbn = ?";
-
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, book.getTitle());
-            stmt.setString(2, book.getAuthor());
-            stmt.setInt(3, book.getIsbn());
-
-            stmt.executeUpdate();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to update book title", e);
-        }
-    }
-
-    @Override
     public void deleteByIsbn(int isbn) {
         String sql = "DELETE FROM book_titles WHERE isbn = ?";
 

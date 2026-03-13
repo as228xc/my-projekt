@@ -277,7 +277,7 @@ public class LibrarySystem implements LibrarySystemAPI {
         logger.info("Book returned successfully. memberId={}, isbn={}, copyId={}", memberId, isbn, loan.getCopyId());
     }
 
-    public void removeMember(int memberId) {
+    public void deactivateMember(int memberId) {
         Member member = memberRepository.findById(memberId);
 
         if (member == null) {

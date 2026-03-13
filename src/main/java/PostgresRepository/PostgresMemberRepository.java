@@ -33,7 +33,7 @@ public class PostgresMemberRepository implements MemberRepository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return null;
@@ -54,7 +54,7 @@ public class PostgresMemberRepository implements MemberRepository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return null;
@@ -77,7 +77,7 @@ public class PostgresMemberRepository implements MemberRepository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+           throw new RuntimeException(e);
         }
 
         return null;
@@ -101,22 +101,7 @@ public class PostgresMemberRepository implements MemberRepository {
             System.out.println("Member saved to database");
 
         } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void deactivateMember(int memberId) {
-        String sql = "UPDATE members SET active = FALSE WHERE member_id = ?";
-
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, memberId);
-            stmt.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -131,7 +116,7 @@ public class PostgresMemberRepository implements MemberRepository {
             stmt.executeUpdate();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -146,7 +131,7 @@ public class PostgresMemberRepository implements MemberRepository {
             stmt.executeUpdate();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -164,7 +149,7 @@ public class PostgresMemberRepository implements MemberRepository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return members;
@@ -205,7 +190,7 @@ public class PostgresMemberRepository implements MemberRepository {
             stmt.executeUpdate();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

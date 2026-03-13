@@ -101,46 +101,4 @@ public class PostgresBookCopyRepository implements BookCopyRepository {
             throw new RuntimeException("Failed to delete book copies", e);
         }
     }
-
-    @Override
-    public int countAvailableCopies(int isbn) {
-        String sql = "SELECT COUNT(*) FROM book_copies WHERE isbn = ? AND available = true";
-
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, isbn);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to count available copies", e);
-        }
-
-        return 0;
-    }
-
-    @Override
-    public int countTotalCopies(int isbn) {
-        String sql = "SELECT COUNT(*) FROM book_copies WHERE isbn = ?";
-
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, isbn);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to count total copies", e);
-        }
-
-        return 0;
-    }
 }

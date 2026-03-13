@@ -49,12 +49,6 @@ public class Member {
         borrowedCount++;
     }
 
-    public void decrementBorrowedCount() {
-        if (borrowedCount > 0) {
-            borrowedCount--;
-        }
-    }
-
     public void registerLateReturn(LocalDate today) {
         lateReturnsCount++;
 

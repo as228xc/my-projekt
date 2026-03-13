@@ -15,10 +15,6 @@ public class BookTitle {
         this.availableCopies = totalCopies;
     }
 
-    public boolean hasAvailableCopy() {
-        return availableCopies > 0;
-    }
-
     public int getIsbn() {
         return isbn;
     }

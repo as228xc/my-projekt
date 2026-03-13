@@ -6,6 +6,4 @@ public interface BookCopyRepository {
     void markCopyAsBorrowed(int copyId);
     void markCopyAsReturned(int copyId);
     void deleteCopiesByIsbn(int isbn);
-    int countAvailableCopies(int isbn);
-    int countTotalCopies(int isbn);
 }

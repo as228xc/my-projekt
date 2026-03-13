@@ -17,14 +17,6 @@ public class Loan {
         this.returnDate = null;
     }
 
-    public void markReturned(LocalDate returnDate) {
-        this.returnDate = returnDate;
-    }
-
-    public boolean isReturned() {
-        return returnDate != null;
-    }
-
     public boolean isLate(LocalDate today) {
         LocalDate checkDate = (returnDate != null) ? returnDate : today;
         return checkDate.isAfter(dueDate);
@@ -44,9 +36,5 @@ public class Loan {
 
     public LocalDate getDueDate() {
         return dueDate;
-    }
-
-    public LocalDate getReturnDate() {
-        return returnDate;
     }
 }
