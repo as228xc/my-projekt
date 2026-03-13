@@ -40,12 +40,10 @@ public class LibraryUI {
                 case 2 -> memberLogin(scanner, memberAuthService, library);
                 case 3 -> {
                     logger.info("System closed by user");
-                    System.out.println("Goodbye!");
                     return;
                 }
                 default -> {
                     logger.warn("Invalid main menu choice: {}", choice);
-                    System.out.println("Invalid option.");
                 }
             }
         }
@@ -64,11 +62,9 @@ public class LibraryUI {
 
         if (success) {
             logger.info("Admin login successful for username={}", username);
-            System.out.println("Admin login successful.");
             adminMenu(scanner, library);
         } else {
             logger.warn("Admin login failed for username={}", username);
-            System.out.println("Invalid username or password.");
         }
     }
 
@@ -85,11 +81,9 @@ public class LibraryUI {
 
         if (member != null) {
             logger.info("Member login successful for memberId={}", memberId);
-            System.out.println("Member login successful. Welcome " + member.getFirstName() + "!");
             memberMenu(scanner, library, member);
         } else {
             logger.warn("Member login failed for memberId={}", memberId);
-            System.out.println("Invalid member ID or password.");
         }
     }
 
@@ -135,12 +129,10 @@ public class LibraryUI {
                 case 11 -> deleteBook(scanner, library);
                 case 12 -> {
                     logger.info("Admin logged out");
-                    System.out.println("Logged out.");
                     return;
                 }
                 default -> {
                     logger.warn("Invalid admin menu choice: {}", choice);
-                    System.out.println("Invalid option.");
                 }
             }
         }
@@ -176,12 +168,10 @@ public class LibraryUI {
                 }
                 case 6 -> {
                     logger.info("Member {} logged out", member.getMemberId());
-                    System.out.println("Logged out.");
                     return;
                 }
                 default -> {
                     logger.warn("Invalid member menu choice: {} for memberId={}", choice, member.getMemberId());
-                    System.out.println("Invalid option.");
                 }
             }
         }
@@ -266,7 +256,6 @@ public class LibraryUI {
                 break;
             } catch (IllegalArgumentException e) {
                 logger.warn("Invalid member type entered");
-                System.out.println("Invalid member type. Please try again.");
             }
         }
 

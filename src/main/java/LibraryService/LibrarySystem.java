@@ -36,7 +36,6 @@ public class LibrarySystem implements LibrarySystemAPI {
         List<Member> members = memberRepository.findAll();
 
         if (members.isEmpty()) {
-            System.out.println("No members found.");
             logger.info("Show all members requested, but no members were found.");
             return;
         }
@@ -64,7 +63,6 @@ public class LibrarySystem implements LibrarySystemAPI {
         List<BookTitle> books = bookRepository.findAll();
 
         if (books.isEmpty()) {
-            System.out.println("No books found.");
             logger.info("Show all books requested, but no books were found.");
             return;
         }
@@ -84,7 +82,6 @@ public class LibrarySystem implements LibrarySystemAPI {
 
     public void registerMember(Member member) {
         if (member == null) {
-            System.out.println("Member cannot be null.");
             logger.error("Attempted to register a null member.");
             return;
         }
@@ -92,13 +89,11 @@ public class LibrarySystem implements LibrarySystemAPI {
         String personalNumber = member.getPersonalNumber();
 
         if (personalNumber == null || personalNumber.isBlank()) {
-            System.out.println("Personal number is required.");
             logger.warn("Registration failed: missing personal number for memberId={}", member.getMemberId());
             return;
         }
 
         if (!personalNumber.matches("\\d+")) {
-            System.out.println("Personal number must contain only digits.");
             logger.warn("Registration failed: invalid personal number '{}' for memberId={}", personalNumber, member.getMemberId());
             return;
         }
@@ -107,10 +102,8 @@ public class LibrarySystem implements LibrarySystemAPI {
 
         if (existingByPersonalNumber != null) {
             if (existingByPersonalNumber.isBlacklisted()) {
-                System.out.println("Registration is not allowed. This person is blocked due to violation of library regulations.");
                 logger.warn("Registration denied: blacklisted person tried to register again. personalNumber={}", personalNumber);
             } else {
-                System.out.println("This person is already registered.");
                 logger.info("Registration skipped: person already registered. personalNumber={}", personalNumber);
             }
             return;
@@ -119,13 +112,11 @@ public class LibrarySystem implements LibrarySystemAPI {
         Member existingById = memberRepository.findById(member.getMemberId());
 
         if (existingById != null) {
-            System.out.println("Member ID already exists.");
             logger.warn("Registration failed: memberId {} already exists.", member.getMemberId());
             return;
         }
 
         memberRepository.save(member);
-        System.out.println("Member registered successfully.");
         logger.info("Member registered successfully. memberId={}, personalNumber={}", member.getMemberId(), personalNumber);
     }
 
@@ -133,7 +124,6 @@ public class LibrarySystem implements LibrarySystemAPI {
         Member member = memberRepository.findById(memberId);
 
         if (member == null) {
-            System.out.println("Member not found.");
             logger.warn("Member search failed. memberId={} not found.", memberId);
             return;
         }
@@ -157,7 +147,6 @@ public class LibrarySystem implements LibrarySystemAPI {
 
     public void addBook(BookTitle book) {
         if (book == null) {
-            System.out.println("Book cannot be null.");
             logger.error("Attempted to add a null book.");
             return;
         }
@@ -165,7 +154,6 @@ public class LibrarySystem implements LibrarySystemAPI {
         BookTitle existing = bookRepository.findByIsbn(book.getIsbn());
 
         if (existing != null) {
-            System.out.println("A book with this ISBN already exists.");
             logger.warn("Add book failed. ISBN {} already exists.", book.getIsbn());
             return;
         }
@@ -173,7 +161,6 @@ public class LibrarySystem implements LibrarySystemAPI {
         bookRepository.save(book);
         bookCopyRepository.createCopies(book.getIsbn(), book.getTotalCopies());
 
-        System.out.println("Book added successfully.");
         logger.info("Book added successfully. ISBN={}, title={}, copies={}",
                 book.getIsbn(), book.getTitle(), book.getTotalCopies());
     }
@@ -183,13 +170,11 @@ public class LibrarySystem implements LibrarySystemAPI {
         BookTitle book = bookRepository.findByIsbn(isbn);
 
         if (book == null) {
-            System.out.println("Book not found.");
             logger.warn("Delete book failed. ISBN {} not found.", isbn);
             return;
         }
 
         if (loanRepository.hasActiveLoansByIsbn(isbn)) {
-            System.out.println("Book cannot be deleted because there are active loans connected to it.");
             logger.warn("Delete book denied. ISBN {} has active loans.", isbn);
             return;
         }
@@ -197,7 +182,6 @@ public class LibrarySystem implements LibrarySystemAPI {
         bookCopyRepository.deleteCopiesByIsbn(isbn);
         bookRepository.deleteByIsbn(isbn);
 
-        System.out.println("Book deleted successfully.");
         logger.info("Book deleted successfully. ISBN={}, title={}", isbn, book.getTitle());
     }
 
@@ -223,19 +207,16 @@ public class LibrarySystem implements LibrarySystemAPI {
         BookTitle book = bookRepository.findByIsbn(isbn);
 
         if (member == null) {
-            System.out.println("Member not found.");
             logger.warn("Lend book failed. Member {} not found.", memberId);
             return;
         }
 
         if (book == null) {
-            System.out.println("Book not found.");
             logger.warn("Lend book failed. ISBN {} not found.", isbn);
             return;
         }
 
         if (!member.canBorrow(today)) {
-            System.out.println("Member cannot borrow more books.");
             logger.warn("Lend book denied. Member {} is not allowed to borrow more books.", memberId);
             return;
         }
@@ -243,7 +224,6 @@ public class LibrarySystem implements LibrarySystemAPI {
         Integer copyId = bookCopyRepository.findAvailableCopyIdByIsbn(isbn);
 
         if (copyId == null) {
-            System.out.println("No available copies.");
             logger.warn("Lend book failed. No available copies for ISBN {}.", isbn);
             return;
         }
@@ -265,7 +245,6 @@ public class LibrarySystem implements LibrarySystemAPI {
         Member member = memberRepository.findById(memberId);
 
         if (member == null) {
-            System.out.println("Member not found.");
             logger.warn("Return book failed. Member {} not found.", memberId);
             return;
         }
@@ -273,7 +252,6 @@ public class LibrarySystem implements LibrarySystemAPI {
         Loan loan = loanRepository.findActiveLoanByMemberIdAndIsbn(memberId, isbn);
 
         if (loan == null) {
-            System.out.println("No active loan found for this member and book.");
             logger.warn("Return book failed. No active loan found for memberId={} and isbn={}", memberId, isbn);
             return;
         }
@@ -287,7 +265,6 @@ public class LibrarySystem implements LibrarySystemAPI {
 
             if (member.getSuspensionsCount() > 2) {
                 memberRepository.blacklistMember(memberId);
-                System.out.println("Member has been blacklisted due to repeated suspensions.");
                 logger.error("Member {} blacklisted after repeated suspensions.", memberId);
                 return;
             }
@@ -297,7 +274,6 @@ public class LibrarySystem implements LibrarySystemAPI {
         member.setBorrowedCount(activeLoans);
         memberRepository.update(member);
 
-        System.out.println("Book returned successfully.");
         logger.info("Book returned successfully. memberId={}, isbn={}, copyId={}", memberId, isbn, loan.getCopyId());
     }
 
@@ -305,7 +281,6 @@ public class LibrarySystem implements LibrarySystemAPI {
         Member member = memberRepository.findById(memberId);
 
         if (member == null) {
-            System.out.println("Member not found.");
             logger.warn("Attempted to delete non-existing memberId={}", memberId);
             return;
         }
@@ -313,13 +288,11 @@ public class LibrarySystem implements LibrarySystemAPI {
         int activeLoans = loanRepository.countActiveLoansByMemberId(memberId);
 
         if (activeLoans > 0) {
-            System.out.println("Cannot delete member. Member still has borrowed books.");
             logger.warn("Attempted to delete member {} who still has {} active loans", memberId, activeLoans);
             return;
         }
 
         memberRepository.delete(memberId);
-        System.out.println("Member deleted successfully.");
         logger.info("Member {} deleted from system", memberId);
     }
 
@@ -327,13 +300,11 @@ public class LibrarySystem implements LibrarySystemAPI {
         Member member = memberRepository.findById(memberId);
 
         if (member == null) {
-            System.out.println("Member not found.");
             logger.warn("Attempted to blacklist non-existing memberId={}", memberId);
             return;
         }
 
         memberRepository.blacklistMember(memberId);
-        System.out.println("Member has been blacklisted and cannot register again.");
         logger.warn("Member {} was blacklisted.", memberId);
     }
 }
