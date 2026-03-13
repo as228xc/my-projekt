@@ -391,7 +391,7 @@ public class LibraryUI {
         int memberId = readMemberId(scanner);
 
         logger.warn("Admin attempting to remove memberId={}", memberId);
-        library.removeMember(memberId);
+        library.deactivateMember(memberId);
     }
 
     private static void banMember(Scanner scanner, LibrarySystemAPI library) {

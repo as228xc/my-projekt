@@ -38,7 +38,7 @@ class LibrarySystemTest {
 
     @Test
     void registerMemberShouldSaveWhenMemberIsValid() {
-        Member member = new Member(1, "Anna", "Karlsson", "199901011234", MemberType.UNDERGRADUATE);
+        Member member = new Member(1, "Anna", "Karlsson", "199901011234", MemberType.UNDERGRADUATE, "test");
 
         when(memberRepository.findByPersonalNumber("199901011234")).thenReturn(null);
         when(memberRepository.findById(1)).thenReturn(null);
@@ -50,8 +50,8 @@ class LibrarySystemTest {
 
     @Test
     void registerMemberShouldNotSaveWhenPersonalNumberAlreadyExists() {
-        Member existing = new Member(1, "Anna", "Karlsson", "199901011234", MemberType.UNDERGRADUATE);
-        Member newMember = new Member(2, "Anna", "Karlsson", "199901011234", MemberType.UNDERGRADUATE);
+        Member existing = new Member(1, "Anna", "Karlsson", "199901011234", MemberType.UNDERGRADUATE, "test");
+        Member newMember = new Member(2, "Anna", "Karlsson", "199901011234", MemberType.UNDERGRADUATE, "test");
 
         when(memberRepository.findByPersonalNumber("199901011234")).thenReturn(existing);
 
@@ -74,7 +74,7 @@ class LibrarySystemTest {
 
     @Test
     void lendBookShouldBorrowAvailableCopyAndCreateLoan() {
-        Member member = new Member(10, "Olle", "Persson", "199501011234", MemberType.MASTER);
+        Member member = new Member(10, "Olle", "Persson", "199501011234", MemberType.MASTER, "test");
         BookTitle book = new BookTitle(123, "Java Basics", "Smith", 2);
         LocalDate today = LocalDate.of(2026, 3, 10);
 
@@ -94,7 +94,7 @@ class LibrarySystemTest {
 
     @Test
     void lendBookShouldDoNothingWhenNoCopyAvailable() {
-        Member member = new Member(10, "Olle", "Persson", "199501011234", MemberType.MASTER);
+        Member member = new Member(10, "Olle", "Persson", "199501011234", MemberType.MASTER, "test");
         BookTitle book = new BookTitle(123, "Java Basics", "Smith", 2);
         LocalDate today = LocalDate.of(2026, 3, 10);
 
@@ -111,7 +111,7 @@ class LibrarySystemTest {
 
     @Test
     void returnBookShouldMarkCopyReturnedAndUpdateMember() {
-        Member member = new Member(10, "Olle", "Persson", "199501011234", MemberType.MASTER);
+        Member member = new Member(10, "Olle", "Persson", "199501011234", MemberType.MASTER, "test");
         LocalDate today = LocalDate.of(2026, 3, 10);
 
         Loan loan = new Loan(10, 55, today.minusDays(3), today.plusDays(11));
@@ -131,7 +131,7 @@ class LibrarySystemTest {
 
     @Test
     void returnBookShouldRegisterLateReturnWhenReturnedLate() {
-        Member member = new Member(10, "Olle", "Persson", "199501011234", MemberType.MASTER);
+        Member member = new Member(10, "Olle", "Persson", "199501011234", MemberType.MASTER, "test");
         LocalDate today = LocalDate.of(2026, 3, 10);
 
         Loan loan = new Loan(10, 55, today.minusDays(20), today.minusDays(5));
